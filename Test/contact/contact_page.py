@@ -1,9 +1,14 @@
+import select
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
 
+from selenium.webdriver.support.select import Select
+
+
 def init():
-    driver = webdriver.Chrome("..\Driver\chrome\chromedriver.exe")
+    driver = webdriver.Chrome("../../Driver/chrome/chromedriver.exe")
     driver.maximize_window()
     driver.get("http://www.atid.store")
     return driver
@@ -298,3 +303,4 @@ def test_end_to_end_incorrectly():
     time.sleep(3)
     error = driver.find_element(By.XPATH,'//label[@id="wpforms-15-field_4-error"]').get_attribute("innerText")
     assert error == "Please enter a valid email address."
+
