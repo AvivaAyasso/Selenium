@@ -1,10 +1,10 @@
-import select
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
-
+from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support.select import Select
+from selenium.webdriver.support import expected_conditions as EC
+
 
 
 def init():
@@ -15,64 +15,82 @@ def init():
 
 
 def test_search_product_in_store():
+
+    STORE = '//li[@id="menu-item-45"]'
+    CATEGORY = '//main[1]/div[1]/form[1]/select[1]'
+    PRODUCT = '//main[1]/div[1]/ul[1]/li'
+    ADD_TO_CART_BUTTON = '//button[contains(text(),"Add to cart")]'
+    CART = '//header/div[@id="ast-desktop-header"]/div[1]/div[1]/div[1]/div[1]/div[3]/div[3]/div[1]/div[1]/a[1]'
+
     #call the driver function
     driver = init()
 
     #go to store page
-    driver.find_element(By.XPATH,'//li[@id="menu-item-45"]').click()
+    driver.find_element(By.XPATH,STORE).click()
 
     #go to list and choose category
-    category = Select(driver.find_element(By.XPATH, '//main[1]/div[1]/form[1]/select[1]'))
+    category = Select(driver.find_element(By.XPATH, CATEGORY))
     category.select_by_index(3)
 
     #choose product
-    product = driver.find_elements(By.XPATH,'//main[1]/div[1]/ul[1]/li')
+    product = driver.find_elements(By.XPATH,PRODUCT)
+    product_name = product[5].find_element(By.TAG_NAME,'h2').text
+    product_price = product[5].find_element(By.TAG_NAME,'bdi').text.split(".")
     product[5].click()
 
+    # waiting until click happens
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, ADD_TO_CART_BUTTON)))
+
     # adding to cart
-    driver.find_element(By.XPATH,'//button[contains(text(),"Add to cart")]').click()
+    driver.find_element(By.XPATH,ADD_TO_CART_BUTTON).click()
 
     #going back to the store page
-    driver.find_element(By.XPATH,'//li[@id="menu-item-45"]').click()
+    driver.find_element(By.XPATH,STORE).click()
 
     #go to list and choose category
-    category1 = Select(driver.find_element(By.XPATH,'//main[1]/div[1]/form[1]/select[1]'))
+    category1 = Select(driver.find_element(By.XPATH,CATEGORY))
     category1.select_by_index(3)
 
     # choose Another product
-    product1 = driver.find_elements(By.XPATH,'//main[1]/div[1]/ul[1]/li')
+    product1 = driver.find_elements(By.XPATH,PRODUCT)
     product1[4].click()
 
+    #waiting until click happens
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, ADD_TO_CART_BUTTON)))
+
     # adding to cart
-    driver.find_element(By.XPATH, '//button[contains(text(),"Add to cart")]').click()
+    driver.find_element(By.XPATH, ADD_TO_CART_BUTTON).click()
 
     #go to cart
-    driver.find_element(By.XPATH,'//header/div[@id="ast-desktop-header"]/div[1]/div[1]/div[1]/div[1]/div[3]/div[3]/div[1]/div[1]/a[1]').click()
+    driver.find_element(By.XPATH,CART).click()
+    time.sleep(5)
 
     #verify that the registered name is the same as the defined name
-    denim_jeans = driver.find_element(By.XPATH,'//a[contains(text(),"Dark Blue Denim Jeans")]').get_attribute("innerText")
-    assert denim_jeans == "Dark Blue Denim Jeans"
+    denim_jeans = driver.find_element(By.XPATH,'//tbody/tr[1]/td[3]/a').get_attribute("innerText")
+    assert denim_jeans == product_name
 
     # verify that the registered price is the same as the defined price
-    denim_jeans_price = driver.find_element(By.XPATH,'//tbody/tr[2]/td[6]/span[1]').get_attribute("innerText").split(".")
-    assert denim_jeans_price[0] == "150"
+    jeans_price = driver.find_element(By.XPATH,'//tbody/tr[1]/td[6]/span[1]/bdi[1]').get_attribute("innerText").split(".")
+    assert jeans_price[0] == product_price[0]
 
-    # verify that the registered name is the same as the defined name
-    brown_jeans= driver.find_element(By.XPATH,'//a[contains(text(),"Dark Brown Jeans")]').get_attribute("innerText")
-    assert brown_jeans == "Dark Brown Jeans"
 
-    # verify that the registered price is the same as the defined price
-    brown_jeans_price = driver.find_element(By.XPATH,'//tbody/tr[1]/td[6]/span[1]').get_attribute("innerText").split(".")
-    assert brown_jeans_price[0] == "150"
 
-    #Calculating the price of the products and comparing them to the final price
-    sum = int(denim_jeans_price[0])+int(brown_jeans_price[0])
-    total = driver.find_element(By.XPATH,'//tbody/tr[1]/td[1]/span[1]').get_attribute("innerText").split(".")
-    assert int(total[0]) == sum
-
-    #Closing and leaving the site
-    driver.close()
-    driver.quit()
+    # # verify that the registered name is the same as the defined name
+    # brown_jeans= driver.find_element(By.XPATH,'//a[contains(text(),"Dark Brown Jeans")]').get_attribute("innerText")
+    # assert brown_jeans == "Dark Brown Jeans"
+    #
+    # # verify that the registered price is the same as the defined price
+    # brown_jeans_price = driver.find_element(By.XPATH,'//tbody/tr[1]/td[6]/span[1]').get_attribute("innerText").split(".")
+    # assert brown_jeans_price[0] == "150"
+    #
+    # #Calculating the price of the products and comparing them to the final price
+    # sum = int(denim_jeans_price[0])+int(brown_jeans_price[0])
+    # total = driver.find_element(By.XPATH,'//tbody/tr[1]/td[1]/span[1]').get_attribute("innerText").split(".")
+    # assert int(total[0]) == sum
+    #
+    # #Closing and leaving the site
+    # driver.close()
+    # driver.quit()
 
 
 
